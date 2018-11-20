@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+    <!-- 配置整合mybatis過程 -->
+    <!-- 1:配置DB相關參數 properties的屬性: ${url} -->
+    <context:property-placeholder location="classpath:jdbc.properties"/>
+
+    <!-- 2: DB Connection -->
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource">
+        <!-- 配置Connection 屬性-->
+        <property name="driverClass" value="${driver}"/>
+        <property name="jdbcUrl" value="${url}"/>
+        <property name="user" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+
+        <!-- c3p0 connection的私有屬性 -->
+        <property name="maxPoolSize" value="30"/>
+        <property name="minPoolSize" value="2"/>
+        <!-- 關閉連接後不自動commit-->
+        <property name="autoCommitOnClose" value="false"/>
+        <!-- 連接超時時間-->
+        <property name="checkoutTimeout" value="50000"/>
+        <!-- 連接失敗重試次數 -->
+        <property name="acquireRetryAttempts" value="2"/>
+        <property name="maxIdleTime" value="200" />
+    </bean>
+
+    <!-- 3:配置SqlSessionFactory-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!-- 注入DB Connection-->
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 配置MyBatis.config檔案:mybatis-config.xml -->
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!-- 掃瞄entity的package 方便直接使用別名
+            e.g. org.supersale.entity.Member -> Member
+         -->
+        <property name="typeAliasesPackage" value="org.supersale.entity"/>
+        <!-- 掃瞄sql配置檔案:mapper需要的xml檔 -->
+        <property name="mapperLocations" value="classpath:mapper/*.xml"/>
+    </bean>
+
+    <!-- 4:配置掃瞄Dao interface package, 動態實現Dao interface, 注入到spring容器中-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 注入sqlSessionFactory-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!-- 給出需要掃描的Dao interface package -->
+        <property name="basePackage" value="org.supersale.dao"/>
+    </bean>
+
+    <!-- 創建一個sqlSession實例，線程安全的，可以在所有DAO實例共享，原理是將sqlSession，事務與當前線程掛鉤  -->
+    <bean name="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate" destroy-method="close" scope="prototype">
+        <constructor-arg index="0" ref="sqlSessionFactory" />
+    </bean>
+
+</beans>

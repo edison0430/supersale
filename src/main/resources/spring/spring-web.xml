@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/mvc
+       http://www.springframework.org/schema/mvc/spring-mvc.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 配置SpringMVC -->
+    <!-- 1:開啟SpringMVC Annotation -->
+    <!-- 簡化配置:
+        (1) 自動註冊DefaultAnnotationHandlerMapping, AnnotationMethodHandlerAdapter
+        (2) 提供:資料綁定
+                 數字和日期的format @NumberFormat, @DataTimeFormat
+                 xml & json讀寫
+    -->
+    <mvc:annotation-driven validator="validator"/>
+
+    <!-- 2: 靜態資源配置
+            2-1: 靜態資源的處理:js, gif, png
+            2-2: 允許使用"/"做mapping
+    -->
+    <mvc:default-servlet-handler/>
+
+    <!-- 3: 配置ViewResolver -->
+    <bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+        <property name="viewClass" value="org.springframework.web.servlet.view.JstlView"/>
+        <property name="prefix" value="/WEB-INF/jsp/"/>
+        <property name="suffix" value=".jsp"/>
+    </bean>
+
+    <!-- 4:掃瞄web相關的bean -->
+    <context:component-scan base-package="org.supersale.web"/>
+
+    <!-- 5:配置Interceptor -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!-- 除了登入、註冊、活動中商品清單、預告商品清單之外，其餘的路徑皆需登入後才可操作-->
+            <mvc:mapping path="/**"/>
+            <mvc:exclude-mapping path="/supersale/list"/>
+            <mvc:exclude-mapping path="/supersale/upcominglist"/>
+            <mvc:exclude-mapping path="/supersale/login"/>
+            <mvc:exclude-mapping path="/supersale/isLogin"/>
+            <mvc:exclude-mapping path="/supersale/register"/>
+
+            <!-- 排除靜態資源 -->
+            <mvc:exclude-mapping path="/resources/**"/>
+            <bean class="org.supersale.interceptor.LoginInterceptor"/>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <!-- 檢查商品當前是否處於可販售的活動時間及庫存，沒問題才能進入結帳流程 -->
+            <mvc:mapping path="/supersale/*/checkoutStep*"/>
+            <bean class="org.supersale.interceptor.CheckoutInterceptor"/>
+        </mvc:interceptor>
+        <mvc:interceptor>
+            <!-- 檢查使用者是否有管理權限，若有才可執行商品管理相關功能-->
+            <mvc:mapping path="/supersale/manage/product/**"/>
+            <bean class="org.supersale.interceptor.ProductInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+
+    <!-- 6:配置validator 自訂錯誤訊息 -->
+    <bean id="validator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean">
+        <property name="providerClass" value="org.hibernate.validator.HibernateValidator" />
+        <property name="validationMessageSource" ref="messageSource" />
+    </bean>
+
+    <bean id="messageSource" class="org.springframework.context.support.ReloadableResourceBundleMessageSource">
+        <property name="basenames">
+            <list>
+                <value>classpath:messages</value>
+            </list>
+        </property>
+        <property name="defaultEncoding" value="utf-8" />
+        <property name="cacheSeconds" value="120" />
+    </bean>
+</beans>

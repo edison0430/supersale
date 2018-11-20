@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.supersale.dao.ShoppingOrderDao">
+    <insert id="insertOrder" useGeneratedKeys="true" keyProperty="orderId" parameterType="ShoppingOrder">
+        insert into shoppingorder(productName, number, price, payment, member_id, buyerName, buyerPhone, buyerAddress, receiverName, receiverPhone, receiverAddress, remark, create_time)
+        values(#{productName}, #{number}, #{price}, #{payment}, #{memberId}, #{buyerName}, #{buyerPhone}, #{buyerAddress}, #{receiverName}, #{receiverPhone}, #{receiverAddress}, #{remark}, #{createTime})
+    </insert>
+
+
+    <select id="getOrderById" resultType="ShoppingOrder">
+        select *
+        from shoppingorder
+        where order_id = #{orderId}
+    </select>
+
+    <select id="getOrderList" resultType="ShoppingOrder">
+        select *
+        from shoppingorder
+        where member_id = #{memberId}
+        ORDER BY order_id
+    </select>
+</mapper>

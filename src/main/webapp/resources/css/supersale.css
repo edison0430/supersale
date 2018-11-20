@@ -1,0 +1,11 @@
+.my-error-class {
+    color:red;
+}
+
+.my-valid-class {
+    color:green;
+}
+span.error {
+    color :red;
+}
+

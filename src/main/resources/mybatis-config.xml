@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+        PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+    <!-- 配置全域屬性-->
+    <settings>
+        <!-- 使用JDBC的getGeneratedKeys 獲取DB中AutoIncrement屬性 -->
+        <setting name="useGeneratedKeys" value="true"/>
+        <!-- 使用列別名替換別名 預設為TRUE
+            select name as title from table
+        -->
+        <setting name="useColumnLabel" value="true"/>
+        <!-- 開啟駝峰式命名: Table(createTime) -> Entity(createTime)-->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+</configuration>
